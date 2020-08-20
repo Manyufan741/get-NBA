@@ -1,17 +1,14 @@
-from flask import Flask, redirect, render_template, request, jsonify, flash, session, g
-from models import db, connect_db, User
-from forms import SignupForm, LoginForm, PlayerForm, AdvancedForm
-from werkzeug.datastructures import MultiDict
-from sqlalchemy.exc import IntegrityError
 import random
 import requests
+from models import db, User
+from Database import connect_db, signup
+from API_interact import search_player, search_player_adv
+from flask import Flask, redirect, render_template, request, jsonify, flash, session, g
+from forms import SignupForm, LoginForm, PlayerForm, AdvancedForm
+from sqlalchemy.exc import IntegrityError
 from requests.exceptions import HTTPError
 
 CURR_USER_KEY = "curr_user"
-BASE_URL = "https://www.balldontlie.io/api/v1"
-# FREE_NBA_API_KEY = "4dc0a5e462mshd4ea55091483ef9p13ae14jsneacfe9e1969b"
-
-seasons = [num for num in range(1979, 2020)]
 
 app = Flask(__name__)
 
@@ -47,13 +44,13 @@ def add_header(req):
 
 
 def do_login(user):
-    """Log in user."""
+    """Log in a user."""
 
     session[CURR_USER_KEY] = user.id
 
 
 def do_logout():
-    """Logout user."""
+    """Logout a user."""
 
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
@@ -71,12 +68,13 @@ def home():
 
 
 @app.route('/signup', methods=["GET", "POST"])
-def signup():
+def user_signup():
+    """Handle user signup."""
     form = SignupForm()
 
     if form.validate_on_submit():
         try:
-            user = User.signup(
+            user = signup(
                 username=form.username.data,
                 password=form.password.data,
                 first_name=form.first_name.data,
@@ -98,6 +96,7 @@ def signup():
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
+    """Handle login of user."""
     form = LoginForm()
 
     if form.validate_on_submit():
@@ -119,54 +118,11 @@ def logout():
     """Handle logout of user."""
     do_logout()
     flash("Succuessfully logged out!", 'success')
-    return redirect('/login')
+    return redirect('/')
 
 
 ######################################################################
 # player search routes
-
-def search_player(player_full_name):
-    search_player_URL = f"{BASE_URL}/players"
-    query = {"search": player_full_name}
-    try:
-        response = requests.get(
-            search_player_URL, params=query)
-        json_response = response.json()['data']
-        if json_response:
-            player_id = json_response[0]['id']
-            results = get_player_avg_stat(player_id)
-            return results
-        else:
-            return None
-
-    except HTTPError:
-        flash("HTTP Error/Page not found", 'danger')
-        return redirect('/')
-
-    except:
-        flash("Wrong request!", 'danger')
-        return redirect('/')
-
-
-def get_player_avg_stat(id):
-    get_player_avg_stat_URL = f"{BASE_URL}/season_averages"
-    results = []
-    for season in seasons:
-        query = {"player_ids[]": id, "season": season}
-        try:
-            response = requests.get(get_player_avg_stat_URL, params=query)
-            json_response = response.json()['data']
-            if json_response:
-                player_data = json_response[0]
-                results.append({"season": player_data['season'], "games_played": player_data['games_played'], "pts": player_data['pts'],
-                                "reb": player_data['reb'], "ast": player_data['ast'], "stl": player_data['stl'], "blk": player_data['blk']})
-
-        except HTTPError:
-            flash("HTTP Error/Page not found", 'danger')
-            return redirect('/')
-
-    return results
-
 
 @app.route('/api/get-player-stats', methods=["GET", "POST"])
 def get_player_stats():
@@ -182,88 +138,7 @@ def get_player_stats():
             return render_template('players/stat.html', results=results, name=player_full_name)
 
     else:
-        # flash("Invalid search!", 'danger')
         return render_template('players/career_stat_search.html', form=form)
-
-
-def search_player_adv(player_full_name, start_date, end_date, tgt_pts, tgt_reb, tgt_ast, tgt_stl, tgt_blk):
-    search_player_URL = f"{BASE_URL}/players"
-    query = {"search": player_full_name}
-    try:
-        response = requests.get(
-            search_player_URL, params=query)
-        json_response = response.json()['data']
-        if json_response:
-            #player is found
-            player_id = json_response[0]['id']
-            results = get_player_advanced_stat(
-                player_id, start_date, end_date, tgt_pts, tgt_reb, tgt_ast, tgt_stl, tgt_blk)
-            return results
-
-        else:
-            return None
-
-    except HTTPError:
-        flash("HTTP Error/Page not found", 'danger')
-        return redirect('/')
-
-    except:
-        flash("Wrong request!", 'danger')
-        return redirect('/')
-
-
-def get_player_advanced_stat(player_id, start_date, end_date, tgt_pts, tgt_reb, tgt_ast, tgt_stl, tgt_blk):
-    search_stats_URL = f"{BASE_URL}/stats"
-    query = {"start_date": start_date,
-             "end_date": end_date, "player_ids[]": player_id, "per_page": 100}
-    target_stats = [tgt_pts, tgt_reb, tgt_ast, tgt_stl, tgt_blk]
-    results = []
-    try:
-        response = requests.get(
-            search_stats_URL, params=query)
-        json_response = response.json()['data']
-        total_pages = response.json()['meta']['total_pages']
-
-        if json_response:
-            # If a player did play in the given time frame
-            for page in range(1, total_pages + 1):
-                query_with_page = {"start_date": start_date, "end_date": end_date,
-                                   "player_ids[]": player_id, "per_page": 100, "page": page}
-
-                response_with_page = requests.get(
-                    search_stats_URL, params=query_with_page)
-                json_response_with_page = response_with_page.json()['data']
-
-                for game in json_response_with_page:
-                    player_actual_stats = [
-                        game.get('pts', 0), game.get('reb', 0), game.get('ast', 0), game.get('stl', 0), game.get('blk', 0)]
-                    passed = check_playerstat_against_criteria(
-                        player_actual_stats, target_stats)
-                    if passed:
-                        results.append({"game_date": game['game']['date'], "playing_for": game['team']['name'],
-                                        "pts": game['pts'], "reb": game['reb'], "ast": game['ast'], "stl": game['stl'], "blk": game['blk']})
-
-            return results
-
-        else:
-            return results
-
-    except HTTPError:
-        flash("HTTP Error/Page not found", 'danger')
-        return redirect('/')
-
-    except:
-        flash("Wrong request!", 'danger')
-        return redirect('/')
-
-
-def check_playerstat_against_criteria(player_actual_stats, target_stats):
-    for i in range(len(player_actual_stats)):
-        if not isinstance(player_actual_stats[i], int):
-            player_actual_stats[i] = 0
-        if player_actual_stats[i] < target_stats[i]:
-            return False
-    return True
 
 
 @app.route('/api/adv-player-stats', methods=["GET", "POST"])
@@ -278,13 +153,6 @@ def get_adv_player_stats():
         ast = form.ast.data or 0
         stl = form.stl.data or 0
         blk = form.blk.data or 0
-        # print("NAME", player_full_name)
-        # print("TIME FRAME", start_date, end_date)
-        # print("PTS", pts)
-        # print("REB", reb)
-        # print("AST", ast)
-        # print("STL", stl)
-        # print("BLK", blk)
         results = search_player_adv(
             player_full_name, start_date, end_date, pts, reb, ast, stl, blk)
 
@@ -295,5 +163,4 @@ def get_adv_player_stats():
             return render_template('players/adv_stat.html', results=results, name=player_full_name)
 
     else:
-        #flash("Invalid search!", 'danger')
         return render_template('players/adv_stat_search.html', form=form)
