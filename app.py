@@ -1,5 +1,6 @@
 import random
 import requests
+import os
 from models import db, User
 from Database import connect_db, signup
 from API_interact import search_player, search_player_adv
@@ -12,11 +13,12 @@ CURR_USER_KEY = "curr_user"
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///nba-users'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    'DATABASE_URL', 'postgresql:///nba-users')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = True
 # app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
-app.config['SECRET_KEY'] = "oneonetwotwo"
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'oneonetwotwo')
 
 connect_db(app)
 db.create_all()
