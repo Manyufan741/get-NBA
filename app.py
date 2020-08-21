@@ -21,7 +21,6 @@ app.config['SQLALCHEMY_ECHO'] = True
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'oneonetwotwo')
 
 connect_db(app)
-db.create_all()
 
 
 @app.before_request
