@@ -3,6 +3,15 @@
 
 {%block content%}
 <h1>Advanced Search</h1>
+<caption>If you want to know the games' stats of <b>Allen Iverson</b> scoring <b>more than or equal to 40 points</b> and
+    dishing out <b>more than or equal to 6 assists</b> between <b>Feb 1, 2000</b> and <b>June 30, 2008</b>, you should
+    enter <b>Allen</b> in the <b><i>Player First Name</i></b> field, <b>Iverson</b> in the <b><i>Player Last Name
+        </i></b> field, <b>2000-2-1</b> in the
+    <b><i>Starting Date</i></b> field, <b>2008-6-30</b> in the <b><i>End Date</i></b> field, <b>40</b> in the
+    <b><i>Points</i></b> field and <b>6</b> in the
+    <b><i>Assists</i></b> field.
+</caption>
+<br>
 <form action="/api/adv-player-stats" method="POST" id="player-search-form">
     {{ form.hidden_tag() }}
 

@@ -41,3 +41,27 @@ class User(db.Model):
                 return user
 
         return False
+
+
+class PlayerStats(db.Model):
+
+    __tablename__ = "playerstats"
+
+    id = db.Column(db.Integer,
+                   primary_key=True,
+                   autoincrement=True)
+    season = db.Column(db.Integer)
+    first_name = db.Column(db.Text,
+                           nullable=False)
+    last_name = db.Column(db.Text, nullable=False)
+    pts = db.Column(db.Float)
+    reb = db.Column(db.Float)
+    ast = db.Column(db.Float)
+    stl = db.Column(db.Float)
+    blk = db.Column(db.Float)
+    title = db.Column(db.Text)
+    rank = db.Column(db.Integer)
+
+    def __repr__(self):
+        p = self
+        return f"<PlayerStats {p.id} {p.season} {p.first_name} {p.last_name} {p.pts} {p.reb} {p.ast} {p.stl} {p.blk} {p.title} {p.rank}>"

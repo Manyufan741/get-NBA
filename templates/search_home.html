@@ -3,6 +3,93 @@
 
 {%block content%}
 <div>
+    <table class="table">
+        <caption>Season Scoring Leaders</caption>
+        <tr>
+            <th>Season</th>
+            <th>Player Name</th>
+            <th>Average Points Per Game</th>
+            <th>Rank</th>
+        </tr>
+        {%for player in scoring_leaders%}
+        <tr>
+            <td>{{player.season}}</td>
+            <td>{{player.first_name}} {{player.last_name}}</td>
+            <td>{{player.pts}}</td>
+            <td>{{player.rank}}</td>
+        </tr>
+        {%endfor%}
+    </table>
+    <table class="table">
+        <caption>Season Rebounding Leaders</caption>
+        <tr>
+            <th>Season</th>
+            <th>Player Name</th>
+            <th>Average Rebounds Per Game</th>
+            <th>Rank</th>
+        </tr>
+        {%for player in rebounding_leaders%}
+        <tr>
+            <td>{{player.season}}</td>
+            <td>{{player.first_name}} {{player.last_name}}</td>
+            <td>{{player.reb}}</td>
+            <td>{{player.rank}}</td>
+        </tr>
+        {%endfor%}
+    </table>
+    <table class="table">
+        <caption>Season Assisting Leaders</caption>
+        <tr>
+            <th>Season</th>
+            <th>Player Name</th>
+            <th>Average Assists Per Game</th>
+            <th>Rank</th>
+        </tr>
+        {%for player in assisting_leaders%}
+        <tr>
+            <td>{{player.season}}</td>
+            <td>{{player.first_name}} {{player.last_name}}</td>
+            <td>{{player.ast}}</td>
+            <td>{{player.rank}}</td>
+        </tr>
+        {%endfor%}
+    </table>
+    <table class="table">
+        <caption>Season Stealing Leaders</caption>
+        <tr>
+            <th>Season</th>
+            <th>Player Name</th>
+            <th>Average Steals Per Game</th>
+            <th>Rank</th>
+        </tr>
+        {%for player in stealing_leaders%}
+        <tr>
+            <td>{{player.season}}</td>
+            <td>{{player.first_name}} {{player.last_name}}</td>
+            <td>{{player.stl}}</td>
+            <td>{{player.rank}}</td>
+        </tr>
+        {%endfor%}
+    </table>
+    <table class="table">
+        <caption>Season Blocking Leaders</caption>
+        <tr>
+            <th>Season</th>
+            <th>Player Name</th>
+            <th>Average Blocks Per Game</th>
+            <th>Rank</th>
+        </tr>
+        {%for player in blocking_leaders%}
+        <tr>
+            <td>{{player.season}}</td>
+            <td>{{player.first_name}} {{player.last_name}}</td>
+            <td>{{player.blk}}</td>
+            <td>{{player.rank}}</td>
+        </tr>
+        {%endfor%}
+    </table>
+</div>
+<div>
     <a href="/api/get-player-stats" class="btn btn-primary">Player Career Stats Search</a>
 </div>
 <a href="/logout" class="btn btn-warning">Log Out</a>

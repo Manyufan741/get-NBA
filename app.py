@@ -1,7 +1,7 @@
 import random
 import requests
 import os
-from models import db, User
+from models import db, User, PlayerStats
 from Database import connect_db, signup
 from API_interact import search_player, search_player_adv
 from flask import Flask, redirect, render_template, request, jsonify, flash, session, g
@@ -62,10 +62,20 @@ def do_logout():
 
 @app.route('/')
 def home():
+    scoring_leaders = PlayerStats.query.filter(
+        PlayerStats.title == 'pts').all()
+    rebounding_leaders = PlayerStats.query.filter(
+        PlayerStats.title == 'reb').all()
+    assisting_leaders = PlayerStats.query.filter(
+        PlayerStats.title == 'ast').all()
+    stealing_leaders = PlayerStats.query.filter(
+        PlayerStats.title == 'stl').all()
+    blocking_leaders = PlayerStats.query.filter(
+        PlayerStats.title == 'blk').all()
     if g.user:
-        return render_template('search_home.html')
+        return render_template('search_home.html', scoring_leaders=scoring_leaders, rebounding_leaders=rebounding_leaders, assisting_leaders=assisting_leaders, stealing_leaders=stealing_leaders, blocking_leaders=blocking_leaders)
     else:
-        return render_template('home-anon.html')
+        return render_template('home-anon.html', scoring_leaders=scoring_leaders, rebounding_leaders=rebounding_leaders, assisting_leaders=assisting_leaders, stealing_leaders=stealing_leaders, blocking_leaders=blocking_leaders)
 
 
 @app.route('/signup', methods=["GET", "POST"])
