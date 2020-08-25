@@ -11,6 +11,9 @@ from models import db, PlayerStats
 from requests.exceptions import HTTPError
 
 BASE_URL = "https://www.balldontlie.io/api/v1"
+IMAGE_URL = "https://nba-players.herokuapp.com"
+DEFAULT_IMAGE = "/static/images/bball_avator.webp"
+
 top5_scorers = []
 top5_rebounders = []
 top5_assisters = []
@@ -18,11 +21,32 @@ top5_stealers = []
 top5_blockers = []
 
 
+def get_player_image(first_name, last_name):
+    URL = f"{IMAGE_URL}/players/{last_name}/{first_name}"
+    try:
+        session = requests.Session()
+        response = session.head(URL)
+        if response.headers['Content-Type'] != "image/png":
+            print(first_name, " ", last_name, " has no image!")
+            return None
+        else:
+            print("Find image for ", first_name, " ", last_name)
+            return URL
+    except:
+        print("get_player_image error")
+        return None
+
+
 def update_database(top5_list):
     # This function is to update the database
     for player in top5_list:
-        player_stat = PlayerStats(season=player['season'], first_name=player['first_name'],  last_name=player['last_name'], pts=player['pts'],
-                                  reb=player['reb'], ast=player['ast'], stl=player['stl'], blk=player['blk'], rank=player['rank'], title=player['title'])
+        image = get_player_image(player['first_name'], player['last_name'])
+        if image:
+            player_stat = PlayerStats(season=player['season'], first_name=player['first_name'],  last_name=player['last_name'], pts=player['pts'],
+                                      reb=player['reb'], ast=player['ast'], stl=player['stl'], blk=player['blk'], rank=player['rank'], title=player['title'], image=image)
+        else:
+            player_stat = PlayerStats(season=player['season'], first_name=player['first_name'],  last_name=player['last_name'], pts=player['pts'],
+                                      reb=player['reb'], ast=player['ast'], stl=player['stl'], blk=player['blk'], rank=player['rank'], title=player['title'], image=DEFAULT_IMAGE)
         db.session.add(player_stat)
         db.session.commit()
 

@@ -1,30 +1,65 @@
+function checkOtherShowing() {
+    let array = ['#scoring-leaders', '#rebounding-leaders', '#assisting-leaders', '#stealing-leaders', '#blocking-leaders'];
+    for (let i = 0; i < array.length; i++) {
+        let $target = $(`${array[i]}`);
+        if ($target.is(':visible')) {
+            $target.hide();
+        }
+    }
+}
 
-// async function processForm(evt) {
-//     evt.preventDefault();
-//     const $player_first_name = $('#first_name').val();
-//     const $player_last_name = $('#last_name').val();
-//     console.log("player full name", $player_first_name, "++", $player_last_name);
-//     const response = await axios.post('http://127.0.0.1:5000/api/get-player-stats', json = { "player_first_name": $player_first_name, "player_last_name": $player_last_name });
-//     handleResponse(response);
-// }
+function toggleScoringLeaders() {
+    let $target = $('#scoring-leaders');
+    checkOtherShowing();
+    if ($target.is(':visible')) {
+        $target.fadeOut(200);
+    } else {
+        $target.fadeIn(333);
+    }
+}
 
-// function handleResponse(resp) {
-//     $results = $('#search-results');
-//     $results.empty();
-//     console.log("response", resp);
-//     if (resp.data) {
-//         result_amount = resp.data.length;
-//         console.log("length", result_amount);
-//         for (let i = 0; i < result_amount; i++) {
-//             first_name = resp.data[i].first_name;
-//             last_name = resp.data[i].last_name;
-//             team = resp.data[i].team;
-//             $player = $(`<p>${first_name} ${last_name} is currently with team ${team}.</p>`);
-//             $results.append($player);
-//         }
-//     } else {
-//         $results.append($('<p>Player not found.</p>'));
-//     }
-// }
+function toggleReboundingLeaders() {
+    let $target = $('#rebounding-leaders');
+    checkOtherShowing();
+    if ($target.is(':visible')) {
+        $target.fadeOut(200);
+    } else {
+        $target.fadeIn(333);
+    }
+}
 
-// $("#player-search-form").on("submit", processForm);
+function toggleAssistingLeaders() {
+    let $target = $('#assisting-leaders');
+    checkOtherShowing();
+    if ($target.is(':visible')) {
+        $target.fadeOut(200);
+    } else {
+        $target.fadeIn(333);
+    }
+}
+
+function toggleStealingLeaders() {
+    let $target = $('#stealing-leaders');
+    checkOtherShowing();
+    if ($target.is(':visible')) {
+        $target.fadeOut(200);
+    } else {
+        $target.fadeIn(333);
+    }
+}
+
+function toggleBlockingLeaders() {
+    let $target = $('#blocking-leaders');
+    checkOtherShowing();
+    if ($target.is(':visible')) {
+        $target.fadeOut(200);
+    } else {
+        $target.fadeIn(333);
+    }
+}
+
+$('#scoring-leader-dropdown').on("click", toggleScoringLeaders);
+$('#rebounding-leader-dropdown').on("click", toggleReboundingLeaders);
+$('#assisting-leader-dropdown').on("click", toggleAssistingLeaders);
+$('#stealing-leader-dropdown').on("click", toggleStealingLeaders);
+$('#blocking-leader-dropdown').on("click", toggleBlockingLeaders);

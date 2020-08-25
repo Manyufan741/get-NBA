@@ -62,6 +62,7 @@ def do_logout():
 
 @app.route('/')
 def home():
+    # get the season leaders' stats that should be stored in database
     scoring_leaders = PlayerStats.query.filter(
         PlayerStats.title == 'pts').all()
     rebounding_leaders = PlayerStats.query.filter(

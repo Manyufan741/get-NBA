@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 
+
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 
@@ -54,6 +55,7 @@ class PlayerStats(db.Model):
     first_name = db.Column(db.Text,
                            nullable=False)
     last_name = db.Column(db.Text, nullable=False)
+    image = db.Column(db.Text)
     pts = db.Column(db.Float)
     reb = db.Column(db.Float)
     ast = db.Column(db.Float)
