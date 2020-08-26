@@ -1,13 +1,14 @@
-import random
-import requests
 import os
-from models import db, User, PlayerStats
-from Database import connect_db, signup
-from API_interact import search_player, search_player_adv
-from flask import Flask, redirect, render_template, request, jsonify, flash, session, g
-from forms import SignupForm, LoginForm, PlayerForm, AdvancedForm
-from sqlalchemy.exc import IntegrityError
+
+import requests
 from requests.exceptions import HTTPError
+from flask import Flask, redirect, render_template, request, jsonify, flash, session, g
+from sqlalchemy.exc import IntegrityError
+
+from models import db, User
+from forms import SignupForm, LoginForm, PlayerForm, AdvancedForm
+from service.database import connect_db, signup, get_leader_stats
+from service.nba_api import search_player, search_player_adv, PlayerStats
 
 CURR_USER_KEY = "curr_user"
 
@@ -63,20 +64,11 @@ def do_logout():
 @app.route('/')
 def home():
     # get the season leaders' stats that should be stored in database
-    scoring_leaders = PlayerStats.query.filter(
-        PlayerStats.title == 'pts').all()
-    rebounding_leaders = PlayerStats.query.filter(
-        PlayerStats.title == 'reb').all()
-    assisting_leaders = PlayerStats.query.filter(
-        PlayerStats.title == 'ast').all()
-    stealing_leaders = PlayerStats.query.filter(
-        PlayerStats.title == 'stl').all()
-    blocking_leaders = PlayerStats.query.filter(
-        PlayerStats.title == 'blk').all()
+    result = get_leader_stats()
     if g.user:
-        return render_template('search_home.html', scoring_leaders=scoring_leaders, rebounding_leaders=rebounding_leaders, assisting_leaders=assisting_leaders, stealing_leaders=stealing_leaders, blocking_leaders=blocking_leaders)
+        return render_template('search_home.html', scoring_leaders=result['scoring_leaders'], rebounding_leaders=result['rebounding_leaders'], assisting_leaders=result['assisting_leaders'], stealing_leaders=result['stealing_leaders'], blocking_leaders=result['blocking_leaders'])
     else:
-        return render_template('home-anon.html', scoring_leaders=scoring_leaders, rebounding_leaders=rebounding_leaders, assisting_leaders=assisting_leaders, stealing_leaders=stealing_leaders, blocking_leaders=blocking_leaders)
+        return render_template('home-anon.html', scoring_leaders=result['scoring_leaders'], rebounding_leaders=result['rebounding_leaders'], assisting_leaders=result['assisting_leaders'], stealing_leaders=result['stealing_leaders'], blocking_leaders=result['blocking_leaders'])
 
 
 @app.route('/signup', methods=["GET", "POST"])
@@ -165,8 +157,9 @@ def get_adv_player_stats():
         ast = form.ast.data or 0
         stl = form.stl.data or 0
         blk = form.blk.data or 0
+        playerstats = PlayerStats(pts, reb, ast, stl, blk)
         results = search_player_adv(
-            player_full_name, start_date, end_date, pts, reb, ast, stl, blk)
+            player_full_name, start_date, end_date, playerstats)
 
         if results is None:
             flash("Player not found", 'danger')

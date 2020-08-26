@@ -3,22 +3,18 @@
 # After getting the player stats, store the stats in the database.
 # This way we can get these data displayed in home pages of the app quickly. Otherwise, fetching these data on-the-fly would be way too slow
 ############################
-import requests
 import time
-from app import app
-from Database import connect_db
-from models import db, PlayerStats
+
+import requests
 from requests.exceptions import HTTPError
+
+from app import app
+from service.database import connect_db
+from models import db, PlayerStats
 
 BASE_URL = "https://www.balldontlie.io/api/v1"
 IMAGE_URL = "https://nba-players.herokuapp.com"
 DEFAULT_IMAGE = "/static/images/bball_avator.webp"
-
-top5_scorers = []
-top5_rebounders = []
-top5_assisters = []
-top5_stealers = []
-top5_blockers = []
 
 
 def get_player_image(first_name, last_name):
@@ -86,75 +82,88 @@ def decide_top5_players(top5_list, cat_stat, category, first_name, last_name, pl
     return top5_list
 
 
-def parse_stat_by_category(category, cat_stat, first_name, last_name, player_data):
+def parse_stat_by_category(category, cat_stat, first_name, last_name, player_data, top5_guys):
     # use this function to see if a player's season average category is in the top5 of our current list
-    global top5_scorers, top5_rebounders, top5_assisters, top5_stealers, top5_blockers
+
     if category == 'pts':
-        top5_scorers = decide_top5_players(top5_scorers, cat_stat, category,
-                                           first_name, last_name, player_data)
+        top5_guys.top5_scorers = decide_top5_players(top5_guys.top5_scorers, cat_stat, category,
+                                                     first_name, last_name, player_data)
     elif category == 'reb':
-        top5_rebounders = decide_top5_players(top5_rebounders, cat_stat, category,
-                                              first_name, last_name, player_data)
+        top5_guys.top5_rebounders = decide_top5_players(top5_guys.top5_rebounders, cat_stat, category,
+                                                        first_name, last_name, player_data)
     elif category == 'ast':
-        top5_assisters = decide_top5_players(top5_assisters, cat_stat, category,
-                                             first_name, last_name, player_data)
+        top5_guys.top5_assisters = decide_top5_players(top5_guys.top5_assisters, cat_stat, category,
+                                                       first_name, last_name, player_data)
     elif category == 'stl':
-        top5_stealers = decide_top5_players(top5_stealers, cat_stat, category,
-                                            first_name, last_name, player_data)
+        top5_guys.top5_stealers = decide_top5_players(top5_guys.top5_stealers, cat_stat, category,
+                                                      first_name, last_name, player_data)
     else:
-        top5_blockers = decide_top5_players(top5_blockers, cat_stat, category,
-                                            first_name, last_name, player_data)
+        top5_guys.top5_blockers = decide_top5_players(top5_guys.top5_blockers, cat_stat, category,
+                                                      first_name, last_name, player_data)
+
+    return top5_guys
 
 
-def get_top5_category_players(id, first_name, last_name):
+def get_top5_category_players(id, first_name, last_name, top5_guys):
     search_player_stat_URL = f"{BASE_URL}/season_averages"
     query = {"player_ids[]": id}
+
+    response = make_requests(search_player_stat_URL, query)
+    player_data = response['data']
+
+    if player_data:
+        category = ['pts', 'reb', 'ast', 'stl', 'blk']
+        for cat in category:
+            top5_guys = parse_stat_by_category(
+                cat, player_data[0][cat], first_name, last_name, player_data[0], top5_guys)
+
+    return top5_guys
+
+
+def make_requests(url, query):
     try:
-        response = requests.get(search_player_stat_URL, params=query)
-        player_data = response.json()['data']
-        if player_data:
-            category = ['pts', 'reb', 'ast', 'stl', 'blk']
-            for cat in category:
-                parse_stat_by_category(
-                    cat, player_data[0][cat], first_name, last_name, player_data[0])
-
-    except HTTPError:
-        return "HTTP Error/Page not found"
-
+        response = requests.get(url, params=query)
+        return response.json()
     except:
-        return "Wrong get_top5_category_players request!"
+        return "Wrong/invalid requests to API!"
 
+
+class Top5:
+    def __init__(self, top5_scorers, top5_rebounders, top5_assisters, top5_stealers, top5_blockers):
+        self.top5_scorers = top5_scorers
+        self.top5_rebounders = top5_rebounders
+        self.top5_assisters = top5_assisters
+        self.top5_stealers = top5_stealers
+        self.top5_blockers = top5_blockers
+
+
+top5_guys = Top5([], [], [], [], [])
 
 search_players_URL = f"{BASE_URL}/players"
-try:
-    query = {"per_page": 100}
-    response = requests.get(search_players_URL, params=query)
-    if response.json()['data']:
-        total_pages = response.json()['meta']['total_pages']
-        for page in range(28, total_pages + 1):
-            query = {"page": page, "per_page": 100}
-            page_response = requests.get(search_players_URL, params=query)
-            if page_response.json()['data']:
-                all_players = page_response.json()['data']
-                i = 0
-                for player in all_players:
-                    id = player.get('id', 0)
-                    first_name = player.get('first_name', 'NULL')
-                    last_name = player.get('last_name', 'NULL')
-                    i += 1
-                    i = sleep_timer(i)
-                    get_top5_category_players(id, first_name, last_name)
+query = {"per_page": 100}
+response = make_requests(search_players_URL, query)
+data = response['data']
+total_pages = response['meta']['total_pages']
+if data:
+    for page in range(28, total_pages + 1):
+        query = {"page": page, "per_page": 100}
+        page_response = make_requests(search_players_URL, query)
+        all_players = page_response['data']
+        if all_players:
+            i = 0
+            for player in all_players:
+                id = player.get('id', 0)
+                first_name = player.get('first_name', 'NULL')
+                last_name = player.get('last_name', 'NULL')
+                i += 1
+                i = sleep_timer(i)
+                top5_guys = get_top5_category_players(
+                    id, first_name, last_name, top5_guys)
 
-    db.drop_all()
-    db.create_all()
-    update_database(top5_scorers)
-    update_database(top5_rebounders)
-    update_database(top5_assisters)
-    update_database(top5_stealers)
-    update_database(top5_blockers)
-
-except HTTPError:
-    print("HTTP Error/Page not found")
-
-except:
-    print("Wrong outside request!")
+db.drop_all()
+db.create_all()
+update_database(top5_guys.top5_scorers)
+update_database(top5_guys.top5_rebounders)
+update_database(top5_guys.top5_assisters)
+update_database(top5_guys.top5_stealers)
+update_database(top5_guys.top5_blockers)
