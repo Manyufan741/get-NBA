@@ -1,32 +1,15 @@
-import os
-
-import requests
-from requests.exceptions import HTTPError
-from flask import Flask, redirect, render_template, request, jsonify, flash, session, g
+from flask import redirect, render_template, request, flash, session, g
 from sqlalchemy.exc import IntegrityError
 
-from models import db, User
-from forms import SignupForm, LoginForm, PlayerForm, AdvancedForm
-from service.database import connect_db, signup, get_leader_stats
+from shared.models import db, User
+from shared.forms import SignupForm, LoginForm, PlayerForm, AdvancedForm
 from service.nba_api import search_player, search_player_adv, PlayerStats
+from dal.database import signup, get_leader_stats
 
 CURR_USER_KEY = "curr_user"
 
-app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    'DATABASE_URL', 'postgresql:///nba-users')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ECHO'] = True
-# app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'oneonetwotwo')
-
-connect_db(app)
-
-
-@app.before_request
-def add_user_to_g():
-    """If user is logged in, add curr user to Flask global."""
+def before_request_endpoint():
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
 
@@ -34,15 +17,20 @@ def add_user_to_g():
         g.user = None
 
 
-@ app.after_request
-def add_header(req):
-    """Add non-caching headers on every request."""
-
+def after_request_endpoint(req):
     req.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     req.headers["Pragma"] = "no-cache"
     req.headers["Expires"] = "0"
     req.headers['Cache-Control'] = 'public, max-age=0'
     return req
+
+
+def home_endpoint():
+    result = get_leader_stats()
+    if g.user:
+        return render_template('search_home.html', scoring_leaders=result['scoring_leaders'], rebounding_leaders=result['rebounding_leaders'], assisting_leaders=result['assisting_leaders'], stealing_leaders=result['stealing_leaders'], blocking_leaders=result['blocking_leaders'])
+    else:
+        return render_template('home-anon.html', scoring_leaders=result['scoring_leaders'], rebounding_leaders=result['rebounding_leaders'], assisting_leaders=result['assisting_leaders'], stealing_leaders=result['stealing_leaders'], blocking_leaders=result['blocking_leaders'])
 
 
 def do_login(user):
@@ -57,25 +45,9 @@ def do_logout():
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
 
-######################################################################
-# General routes
 
-
-@app.route('/')
-def home():
-    # get the season leaders' stats that should be stored in database
-    result = get_leader_stats()
-    if g.user:
-        return render_template('search_home.html', scoring_leaders=result['scoring_leaders'], rebounding_leaders=result['rebounding_leaders'], assisting_leaders=result['assisting_leaders'], stealing_leaders=result['stealing_leaders'], blocking_leaders=result['blocking_leaders'])
-    else:
-        return render_template('home-anon.html', scoring_leaders=result['scoring_leaders'], rebounding_leaders=result['rebounding_leaders'], assisting_leaders=result['assisting_leaders'], stealing_leaders=result['stealing_leaders'], blocking_leaders=result['blocking_leaders'])
-
-
-@app.route('/signup', methods=["GET", "POST"])
-def user_signup():
-    """Handle user signup."""
+def user_signup_endpoint():
     form = SignupForm()
-
     if form.validate_on_submit():
         try:
             user = signup(
@@ -91,16 +63,13 @@ def user_signup():
             return render_template('users/signup.html', form=form)
 
         do_login(user)
-
         return redirect("/")
 
     else:
         return render_template('users/signup.html', form=form)
 
 
-@app.route('/login', methods=["GET", "POST"])
-def login():
-    """Handle login of user."""
+def login_endpoint():
     form = LoginForm()
 
     if form.validate_on_submit():
@@ -117,19 +86,13 @@ def login():
     return render_template('users/login.html', form=form)
 
 
-@app.route('/logout')
-def logout():
-    """Handle logout of user."""
+def logout_endpoint():
     do_logout()
     flash("Succuessfully logged out!", 'success')
     return redirect('/')
 
 
-######################################################################
-# player search routes
-
-@app.route('/api/get-player-stats', methods=["GET", "POST"])
-def get_player_stats():
+def get_player_stats_endpoint():
     form = PlayerForm()
     if form.validate_on_submit():
         player_full_name = form.first_name.data + ' ' + form.last_name.data
@@ -145,8 +108,7 @@ def get_player_stats():
         return render_template('players/career_stat_search.html', form=form)
 
 
-@app.route('/api/adv-player-stats', methods=["GET", "POST"])
-def get_adv_player_stats():
+def get_adv_player_stats_endpoint():
     form = AdvancedForm()
     if form.validate_on_submit():
         player_full_name = form.first_name.data + ' ' + form.last_name.data

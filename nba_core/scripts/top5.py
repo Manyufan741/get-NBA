@@ -9,8 +9,8 @@ import requests
 from requests.exceptions import HTTPError
 
 from app import app
-from service.database import connect_db
-from models import db, PlayerStats
+from dal.database import connect_db
+from shared.models import db, PlayerStats
 
 BASE_URL = "https://www.balldontlie.io/api/v1"
 IMAGE_URL = "https://nba-players.herokuapp.com"

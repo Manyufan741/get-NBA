@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 
-from models import db, User, PlayerStats
+from shared.models import db, User, PlayerStats
 
 bcrypt = Bcrypt()
 
