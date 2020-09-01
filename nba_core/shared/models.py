@@ -5,13 +5,6 @@ db = SQLAlchemy()
 bcrypt = Bcrypt()
 
 
-def connect_db(app):
-    """Connect to database."""
-
-    db.app = app
-    db.init_app(app)
-
-
 class User(db.Model):
 
     __tablename__ = "users"
@@ -28,25 +21,6 @@ class User(db.Model):
     def __repr__(self):
         u = self
         return f"<User {u.id} {u.username} {u.first_name} {u.last_name}>"
-
-    @classmethod
-    def signup(cls, username, password, first_name, last_name):
-        """Sign up user.
-
-        Hashes password and adds user to system.
-        """
-
-        hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
-
-        user = User(
-            username=username,
-            password=hashed_pwd,
-            first_name=first_name,
-            last_name=last_name
-        )
-
-        db.session.add(user)
-        return user
 
     @classmethod
     def authenticate(cls, username, password):
@@ -67,3 +41,28 @@ class User(db.Model):
                 return user
 
         return False
+
+
+class PlayerStats(db.Model):
+
+    __tablename__ = "playerstats"
+
+    id = db.Column(db.Integer,
+                   primary_key=True,
+                   autoincrement=True)
+    season = db.Column(db.Integer)
+    first_name = db.Column(db.Text,
+                           nullable=False)
+    last_name = db.Column(db.Text, nullable=False)
+    image = db.Column(db.Text)
+    pts = db.Column(db.Float)
+    reb = db.Column(db.Float)
+    ast = db.Column(db.Float)
+    stl = db.Column(db.Float)
+    blk = db.Column(db.Float)
+    title = db.Column(db.Text)
+    rank = db.Column(db.Integer)
+
+    def __repr__(self):
+        p = self
+        return f"<PlayerStats {p.id} {p.season} {p.first_name} {p.last_name} {p.pts} {p.reb} {p.ast} {p.stl} {p.blk} {p.title} {p.rank}>"

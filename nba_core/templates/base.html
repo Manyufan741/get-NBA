@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.css">
+    <script src="https://unpkg.com/jquery"></script>
+    <script src="https://unpkg.com/popper"></script>
+    <script src="https://unpkg.com/bootstrap"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
+    <link rel="stylesheet" href="/static/stylesheets/style.css">
+    <link rel="shortcut icon" href="/static/favicon.ico">
+    <title>{%block title%}{%endblock%}</title>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a href="/" class="navbar-brand">
+                    <img src="/static/images/bball_icon.png" alt="logo">
+                    <span>get-NBA</span>
+                </a>
+            </div>
+            <ul class="nav navbar-nav navbar-right">
+                {% if not g.user %}
+                <li><a href="/signup">Sign up</a></li>
+                <li><a href="/login">Log in</a></li>
+                {% else %}
+                <li><a href="/api/player-stats">Player Career Stat Search</a></li>
+                <li><a href="/api/adv-player-stats">Advanced Search</a></li>
+                <li><a href="/logout">Log out</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        {% for category, message in get_flashed_messages(with_categories=True) %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+
+        {% block content %}
+        {% endblock %}
+    </div>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css"
+        integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <!-- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/axios/dist/axios.js"></script>
+    <script src="/static/nba.js"></script>
+</body>
+
+</html>
