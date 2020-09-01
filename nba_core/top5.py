@@ -48,9 +48,9 @@ def update_database(top5_list):
 
 
 def sleep_timer(i):
-    # this timer stops for 70 secs after every 44 requests. This is due to the limit of the amount of requests per minute of the API site.
-    while i > 44:
-        time.sleep(70)
+    # this timer stops for 60 secs after every 50 requests. This is due to the limit of the amount of requests per minute of the API site.
+    while i > 50:
+        time.sleep(60)
         i = 0
     return i
 
@@ -122,10 +122,20 @@ def get_top5_category_players(id, first_name, last_name, top5_guys):
 
 def make_requests(url, query):
     try:
+        timer.tik = sleep_timer(timer.tik)
+        timer.tik += 1
         response = requests.get(url, params=query)
         return response.json()
     except:
         return "Wrong/invalid requests to API!"
+
+
+class Timer:
+    def __init__(self, tik):
+        self.tik = tik
+
+
+timer = Timer(0)
 
 
 class Top5:
@@ -150,13 +160,10 @@ if data:
         page_response = make_requests(search_players_URL, query)
         all_players = page_response['data']
         if all_players:
-            i = 0
             for player in all_players:
                 id = player.get('id', 0)
                 first_name = player.get('first_name', 'NULL')
                 last_name = player.get('last_name', 'NULL')
-                i += 1
-                i = sleep_timer(i)
                 top5_guys = get_top5_category_players(
                     id, first_name, last_name, top5_guys)
 
