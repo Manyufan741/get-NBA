@@ -8,9 +8,9 @@ import time
 import requests
 from requests.exceptions import HTTPError
 
-from nba_core.app import app
-from nba_core.dal.database import connect_db
-from nba_core.shared.models import db, PlayerStats
+from app import app
+from dal.database import connect_db
+from shared.models import db, PlayerStats
 
 BASE_URL = "https://www.balldontlie.io/api/v1"
 IMAGE_URL = "https://nba-players.herokuapp.com"
