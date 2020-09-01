@@ -3,7 +3,7 @@ import os
 from flask import Flask
 
 from dal.database import connect_db
-from endpoints.endpoint_functions import before_request_endpoint, after_request_endpoint, user_signup_endpoint, home_endpoint, login_endpoint, logout_endpoint, get_player_stats_endpoint, get_adv_player_stats_endpoint
+from endpoint_functions.functions import before_request, after_request, user_signup, home, login, logout, get_player_stats, get_adv_player_stats
 
 app = Flask(__name__)
 
@@ -19,50 +19,33 @@ connect_db(app)
 @app.before_request
 def add_user_to_g():
     """If user is logged in, add curr user to Flask global."""
-    before_request_endpoint()
+    before_request()
 
 
 @ app.after_request
 def add_header(req):
     """Add non-caching headers on every request."""
-    return after_request_endpoint(req)
+    return after_request(req)
 
 ######################################################################
 # General routes
 
 
-@app.route('/')
-def home():
-    # get the season leaders' stats that should be stored in database
-    return home_endpoint()
+app.add_url_rule('/', 'home', home)
 
+app.add_url_rule('/signup', 'user_signup',
+                 user_signup, methods=["GET", "POST"])
 
-@app.route('/signup', methods=["GET", "POST"])
-def user_signup():
-    """Handle user signup."""
-    return user_signup_endpoint()
+app.add_url_rule('/login', 'login', login, methods=["GET", "POST"])
 
-
-@app.route('/login', methods=["GET", "POST"])
-def login():
-    """Handle login of user."""
-    return login_endpoint()
-
-
-@app.route('/logout')
-def logout():
-    """Handle logout of user."""
-    return logout_endpoint()
+app.add_url_rule('/logout', 'logout', logout)
 
 
 ######################################################################
 # player search routes
 
-@app.route('/api/get-player-stats', methods=["GET", "POST"])
-def get_player_stats():
-    return get_player_stats_endpoint()
+app.add_url_rule('/api/player-stats', 'get_player_stats',
+                 get_player_stats, methods=["GET", "POST"])
 
-
-@app.route('/api/adv-player-stats', methods=["GET", "POST"])
-def get_adv_player_stats():
-    return get_adv_player_stats_endpoint()
+app.add_url_rule('/api/adv-player-stats', 'get_adv_player_stats',
+                 get_adv_player_stats, methods=["GET", "POST"])

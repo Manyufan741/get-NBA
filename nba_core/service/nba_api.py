@@ -1,3 +1,4 @@
+import time
 import requests
 from requests.exceptions import HTTPError
 
@@ -14,8 +15,26 @@ class PlayerStats:
         self.blk = blk
 
 
+class Timer:
+    def __init__(self, tik):
+        self.tik = tik
+
+
+timer = Timer(0)
+
+
+def sleep_timer(i):
+    # this timer stops for 70 secs after every 44 requests. This is due to the limit of the amount of requests per minute of the API site.
+    while i > 50:
+        time.sleep(60)
+        i = 0
+    return i
+
+
 def make_requests(url, query):
     try:
+        timer.tik = sleep_timer(timer.tik)
+        timer.tik += 1
         response = requests.get(url, params=query)
         return response.json()
     except:
@@ -103,6 +122,7 @@ def get_player_advanced_stat(player_id, start_date, end_date, playerstats):
 
 
 def check_playerstat_against_criteria(player_actual_stats, target_stats):
+    # check if the stats are above the searching criteria
     for i in range(len(player_actual_stats)):
         if not isinstance(player_actual_stats[i], int):
             player_actual_stats[i] = 0

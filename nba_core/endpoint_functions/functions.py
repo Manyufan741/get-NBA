@@ -9,7 +9,7 @@ from dal.database import signup, get_leader_stats
 CURR_USER_KEY = "curr_user"
 
 
-def before_request_endpoint():
+def before_request():
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
 
@@ -17,7 +17,7 @@ def before_request_endpoint():
         g.user = None
 
 
-def after_request_endpoint(req):
+def after_request(req):
     req.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     req.headers["Pragma"] = "no-cache"
     req.headers["Expires"] = "0"
@@ -25,7 +25,7 @@ def after_request_endpoint(req):
     return req
 
 
-def home_endpoint():
+def home():
     result = get_leader_stats()
     if g.user:
         return render_template('search_home.html', scoring_leaders=result['scoring_leaders'], rebounding_leaders=result['rebounding_leaders'], assisting_leaders=result['assisting_leaders'], stealing_leaders=result['stealing_leaders'], blocking_leaders=result['blocking_leaders'])
@@ -46,7 +46,7 @@ def do_logout():
         del session[CURR_USER_KEY]
 
 
-def user_signup_endpoint():
+def user_signup():
     form = SignupForm()
     if form.validate_on_submit():
         try:
@@ -69,7 +69,7 @@ def user_signup_endpoint():
         return render_template('users/signup.html', form=form)
 
 
-def login_endpoint():
+def login():
     form = LoginForm()
 
     if form.validate_on_submit():
@@ -86,13 +86,13 @@ def login_endpoint():
     return render_template('users/login.html', form=form)
 
 
-def logout_endpoint():
+def logout():
     do_logout()
     flash("Succuessfully logged out!", 'success')
     return redirect('/')
 
 
-def get_player_stats_endpoint():
+def get_player_stats():
     form = PlayerForm()
     if form.validate_on_submit():
         player_full_name = form.first_name.data + ' ' + form.last_name.data
@@ -100,7 +100,7 @@ def get_player_stats_endpoint():
 
         if results is None:
             flash("Player not found", 'danger')
-            return redirect('/api/get-player-stats')
+            return redirect('/api/player-stats')
         else:
             return render_template('players/stat.html', results=results, name=player_full_name)
 
@@ -108,7 +108,7 @@ def get_player_stats_endpoint():
         return render_template('players/career_stat_search.html', form=form)
 
 
-def get_adv_player_stats_endpoint():
+def get_adv_player_stats():
     form = AdvancedForm()
     if form.validate_on_submit():
         player_full_name = form.first_name.data + ' ' + form.last_name.data

@@ -10,3 +10,9 @@ API for image gathering: https://nba-players.herokuapp.com/
 3. Users can also do an advanced search by providing the name of the player, a time frame from start_date to end_date, and searching criteria on stats.
     For example:
     If you want to know the games' stats of "Allen Iverson" scoring more than or equal to 50 points between Feb 1, 2000 and June 30, 2008, you should enter "Allen" in the Player First Name field, "Iverson" in the Player Last Name field, "2000-2-1" in the Starting Date field, "2008-6-30" in the End Date field and "50" in the Points field.
+
+# Developer notes
+1. To create virtual environment: python -m venv venv
+2. To activate virtual environmet: source venv/bin(or Scripts)/activate
+3. To install required dependencies in virtual environment: pip install requirements.txt
+4. To preload the database of top 5 players: python nba_core/scripts/top5.py
