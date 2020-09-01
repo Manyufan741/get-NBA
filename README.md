@@ -16,3 +16,8 @@ API for image gathering: https://nba-players.herokuapp.com/
 2. To activate virtual environmet: source venv/bin(or Scripts)/activate
 3. To install required dependencies in virtual environment: pip install requirements.txt
 4. To preload the database of top 5 players: python nba_core/scripts/top5.py
+
+
+# TODO
+1. Refine the method of dealing with the API request limit.
+2. Tests
