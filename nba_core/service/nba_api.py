@@ -32,9 +32,9 @@ def sleep_timer(i):
 
 
 def make_requests(url, query):
+    timer.tik = sleep_timer(timer.tik)
+    timer.tik += 1
     try:
-        timer.tik = sleep_timer(timer.tik)
-        timer.tik += 1
         response = requests.get(url, params=query)
         return response.json()
     except:

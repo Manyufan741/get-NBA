@@ -47,14 +47,6 @@ def update_database(top5_list):
         db.session.commit()
 
 
-def sleep_timer(i):
-    # this timer stops for 60 secs after every 50 requests. This is due to the limit of the amount of requests per minute of the API site.
-    while i > 50:
-        time.sleep(60)
-        i = 0
-    return i
-
-
 def top5_list_sort(cat, input_list, first_name, last_name):
     # sort the top5 lists based on the specified category(cat) and giving them a rank and title
     input_list = sorted(input_list, key=lambda i: i[cat], reverse=True)
@@ -77,7 +69,7 @@ def decide_top5_players(top5_list, cat_stat, category, first_name, last_name, pl
             top5_list.pop()
             top5_list.append({"season": player_data['season'], "first_name": first_name, "last_name": last_name, "pts": player_data['pts'],
                               "reb": player_data['reb'], "ast": player_data['ast'], "stl": player_data['stl'], "blk": player_data['blk']})
-
+            print(">>>top5 list updated", category, flush=True)
     top5_list = top5_list_sort(category, top5_list, first_name, last_name)
     return top5_list
 
@@ -110,6 +102,7 @@ def get_top5_category_players(id, first_name, last_name, top5_guys):
 
     response = make_requests(search_player_stat_URL, query)
     player_data = response['data']
+    print(">>>player id", id, "name", first_name, " ", last_name, flush=True)
 
     if player_data:
         category = ['pts', 'reb', 'ast', 'stl', 'blk']
@@ -121,13 +114,23 @@ def get_top5_category_players(id, first_name, last_name, top5_guys):
 
 
 def make_requests(url, query):
+    timer.tik = sleep_timer(timer.tik)
+    timer.tik += 1
     try:
-        timer.tik = sleep_timer(timer.tik)
-        timer.tik += 1
         response = requests.get(url, params=query)
         return response.json()
     except:
-        return "Wrong/invalid requests to API!"
+        print("Wrong/invalid or too many requests to API!", flush=True)
+        time.sleep(60)
+        return requests.get(url, params=query).json()
+
+
+def sleep_timer(i):
+    # this timer stops for 60 secs after every 50 requests. This is due to the limit of the amount of requests per minute of the API site.
+    while i > 44:
+        time.sleep(70)
+        i = 0
+    return i
 
 
 class Timer:
