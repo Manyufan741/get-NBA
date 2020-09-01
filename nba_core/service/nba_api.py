@@ -24,7 +24,7 @@ timer = Timer(0)
 
 
 def sleep_timer(i):
-    # this timer stops for 70 secs after every 44 requests. This is due to the limit of the amount of requests per minute of the API site.
+    # this timer stops for 60 secs after every 50 requests. This is due to the limit of the amount of requests per minute of the API site.
     while i > 50:
         time.sleep(60)
         i = 0
