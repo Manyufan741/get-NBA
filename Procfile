@@ -1,1 +1,1 @@
-web: gunicorn --pythonpath nba_core nba_core.app
+web: gunicorn --pythonpath nba_core nba_core.app:app
