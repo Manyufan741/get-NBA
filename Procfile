@@ -1,1 +1,2 @@
-web: gunicorn nba_core.app: app 
+web: cd nba_core
+web: gunicorn app: app 
